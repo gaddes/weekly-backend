@@ -13,3 +13,9 @@ functions:
       - http:
           path: ping
           method: get
+  getUser:
+    handler: handler.getUser
+    events:
+      - http:
+          path: user
+          method: get

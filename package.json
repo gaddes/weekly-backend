@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "description": "Example demonstrates how to setup a simple HTTP GET endpoint",
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.682.0"
+  }
 }
