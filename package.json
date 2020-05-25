@@ -6,5 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.682.0"
+  },
+  "scripts": {
+    "test:local-createUser": "serverless invoke local -f createUser -d '{\"body\": \"{\\\"id\\\": \\\"matt\\\"}\"}' -l"
   }
 }

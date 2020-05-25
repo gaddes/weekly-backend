@@ -19,3 +19,9 @@ functions:
       - http:
           path: user
           method: get
+  createUser:
+    handler: handler.createUser
+    events:
+      - http:
+          path: user
+          method: post

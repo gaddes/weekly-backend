@@ -109,3 +109,37 @@ module.exports.getUser = (event, context, callback) => {
   //   }
   // });
 };
+
+module.exports.createUser = (event, context, callback) => {
+  const { id } = JSON.parse(event.body);
+  const params = {
+    Item: {
+      "userId": {
+        S: id
+      },
+    },
+    TableName: "weekly",
+  };
+
+  const cb = (err, data) => {
+
+  };
+
+  dynamodb.putItem(params, (err, data) => {
+    if (err) callback(err);
+    callback(null, data);
+  });
+
+  const response = {
+    statusCode: 200,
+    // headers: {
+    //   'Access-Control-Allow-Origin': '*',
+    //   'Access-Control-Allow-Credentials': true,
+    // },
+    body: JSON.stringify({
+      message: `success!`,
+    }),
+  };
+
+  callback(null, response);
+};
