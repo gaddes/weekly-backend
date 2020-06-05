@@ -2,6 +2,11 @@
 const AWS = require('aws-sdk');
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10' }); // Default if we dont specify region = N. Virginia
 
+const defaultHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Credentials': true,
+};
+
 module.exports.endpoint = (event, context, callback) => {
   const response = {
     statusCode: 200,
@@ -14,100 +19,30 @@ module.exports.endpoint = (event, context, callback) => {
 };
 
 module.exports.getUser = (event, context, callback) => {
-  // TODO: for dev only, remove this console.log for prod
-  console.log({
-    event,
-    context,
-    callback,
-  });
-
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `Success! Check console logs for event params...`,
-    }),
+  const params = {
+    Key: {
+      "userId": {
+        S: event.queryStringParameters.userId
+      }
+    },
+    TableName: "weekly"
   };
 
-  callback(null, response);
+  dynamodb.getItem(params, (err, data) => {
+    if (err) callback(err);
 
-  // const params = {
-  //   Key: {
-  //     "UserID": {
-  //       S: 'm'
-  //     }
-  //   },
-  //   TableName: "weekly"
-  // };
+    const response = {
+      statusCode: 200,
+      headers: defaultHeaders,
+      // Return specific properties from data object
+      body: JSON.stringify({
+        userId: data.Item.userId.S,
+        tasks: data.Item.tasks.L,
+      }),
+    };
 
-  // dynamodb.getItem(params, function(err, data) {
-  //   if (err) {
-  //     console.log(err, err.stack);
-  //     callback(err);
-  //     // TODO: hide DB error from client
-  //   } else {
-  //     console.log(data);
-  //
-  //     // User doesn't exist in DB
-  //     if (data.Item === undefined) {
-  //       callback("[NotFound] ID not recognised. Please try again.");
-  //     }
-  //
-  //     // Success - Primary user has secondary IDs
-  //     if (data.Item.secondaryIds) {
-  //       // Store primary user in const
-  //       const primaryUser = createUserObject(data.Item);
-  //
-  //       // Create map of Keys to request
-  //       const requestKeys = data.Item.secondaryIds.L.map(id => {
-  //         return {
-  //           "UserID": {
-  //             S: id.S
-  //           }
-  //         };
-  //       });
-  //
-  //       // Construct params for second GET request (for secondary users)
-  //       const batchParams = {
-  //         RequestItems: {
-  //           "wedding": {
-  //             Keys: requestKeys
-  //           }
-  //         }
-  //       };
-  //
-  //       // Get secondary users
-  //       dynamodb.batchGetItem(batchParams, function(err, data) {
-  //         if (err) {
-  //           callback(err);
-  //         } else {
-  //           // User doesn't exist in DB
-  //           if (data.Responses === undefined) {
-  //             callback("[NotFound] ID not recognised. Please try again.");
-  //           }
-  //
-  //           // Success case
-  //           // For each returned user, create user object
-  //           const secondaryUsers = data.Responses.wedding.map(item => createUserObject(item));
-  //
-  //           const allUsers = [
-  //             primaryUser,
-  //             ...secondaryUsers
-  //           ];
-  //
-  //           callback(null, allUsers);
-  //         }
-  //       });
-  //     } else {
-  //       // TODO: return this as an array AFTER the work on secondardIDs is complete
-  //
-  //       // Success - Primary user only
-  //       const user = [createUserObject(data.Item)];
-  //
-  //       callback(null, user);
-  //       // TODO: provide success response e.g. 200 code
-  //     }
-  //   }
-  // });
+    callback(null, response);
+  });
 };
 
 module.exports.createUser = async (event, context, callback) => {
@@ -117,6 +52,9 @@ module.exports.createUser = async (event, context, callback) => {
       "userId": {
         S: id
       },
+      "tasks": {
+        L: [] // Create empty list of 'tasks' in DB
+      }
     },
     TableName: "weekly",
   };
@@ -128,10 +66,7 @@ module.exports.createUser = async (event, context, callback) => {
 
   const response = {
     statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
+    headers: defaultHeaders,
     body: JSON.stringify({
       message: `New user created successfully`,
     }),

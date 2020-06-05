@@ -8,6 +8,7 @@
     "aws-sdk": "^2.682.0"
   },
   "scripts": {
-    "test:local-createUser": "serverless invoke local -f createUser -d '{\"body\": \"{\\\"id\\\": \\\"matt\\\"}\"}' -l"
+    "test:local-createUser": "serverless invoke local -f createUser -d '{\"body\": \"{\\\"id\\\": \\\"matt\\\"}\"}' -l",
+    "deploy": "serverless deploy -v"
   }
 }
